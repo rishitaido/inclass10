@@ -27,8 +27,15 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+ class _MyHomePageState extends State<MyHomePage> { 
+  final TextEditingController _idController = TextEditingController();
 
   // Button Methods
   void _insert() async {
@@ -50,8 +57,8 @@ class MyHomePage extends StatelessWidget {
 
   void _update() async {
     Map<String,dynamic> row = {
-      DatabaseHelper.columnId: 4,
-      DatabaseHelper.columnName: "John", 
+      DatabaseHelper.columnId: 1,
+      DatabaseHelper.columnName: "Jonny", 
       DatabaseHelper.columnAge: 10,
     }; 
     final rowsAffected = await dbHelper.update(row); 
@@ -64,12 +71,22 @@ class MyHomePage extends StatelessWidget {
     debugPrint('deleted $rowsDeleted row(s): row $id'); 
 
   }
-  void _queryByID() async{
-    const id = 5;
-    final row = await dbHelper.queryByID(id); 
-    if (row != null){
-      debugPrint('Found row: $row'); 
-    }else {
+  void _queryByID() async {
+    if (_idController.text.isEmpty) {
+      debugPrint('Please enter an ID');
+      return;
+    }
+
+    final id = int.tryParse(_idController.text);
+    if (id == null) {
+      debugPrint('Invalid ID input');
+      return;
+    }
+
+    final row = await dbHelper.queryByID(id);
+    if (row != null) {
+      debugPrint('Found row: $row');
+    } else {
       debugPrint('No record found for ID $id');
     }
   }
@@ -111,11 +128,36 @@ class MyHomePage extends StatelessWidget {
               onPressed: _delete,
               child: const Text('Delete'),
             ),
-            const SizedBox(height: 10,),
-            ElevatedButton(
-              onPressed: _queryByID, 
-              child: const Text('Query by ID')
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _idController,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
+                        labelText: 'Enter ID to Query',
+                        labelStyle: TextStyle(color: Colors.white),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.blueAccent),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: _queryByID, 
+                    child: const Text('Query by ID'),
+                  ),
+                ],
               ),
+            ),
             const SizedBox(height: 10,),
             ElevatedButton(
               onPressed: _deleteAll, 
